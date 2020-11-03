@@ -1,65 +1,83 @@
-import Head from 'next/head'
-import styles from '../styles/Home.module.css'
+import { useState, useEffect } from "react";
+
+// NextJS
+import Router from "next/router";
+import Link from "next/link";
+
+// MUI
+import Container from "@material-ui/core/Container";
+import Typography from "@material-ui/core/Typography";
+import TextField from "@material-ui/core/TextField";
+
+import { makeStyles } from "@material-ui/core/styles";
+
+const useStyles = makeStyles({
+  mainContainer: {
+    backgroundColor: "#5383E8",
+    height: "calc(100vh - 136px)",
+  },
+  mainSection: {
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+    flexDirection: "column",
+  },
+  searchBox: {
+    backgroundColor: "white",
+    boxShadow: "0 2px 2px 0 rgba(0, 0, 0, 0.19)",
+  },
+});
 
 export default function Home() {
+  const classes = useStyles();
+
+  const [userName, setUserName] = useState("");
+  const [isFocus, setIsFocus] = useState(false);
+  const [userList, setUserList] = useState([]);
+
+  useEffect(() => {
+    setUserList(JSON.parse(localStorage.getItem("users") || "[]").slice(0, 10));
+  }, []);
+  const handleChange = (e) => {
+    setUserName(e.target.value);
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+
+    let users = JSON.parse(localStorage.getItem("users") || "[]").slice(0, 9);
+
+    console.log(users, "users");
+
+    !users.includes(userName) ? users.unshift(userName) : null;
+
+    setUserList(users);
+    localStorage.setItem("users", JSON.stringify(users));
+
+    Router.push(`/summoner?userName=${userName}`);
+  };
+
   return (
-    <div className={styles.container}>
-      <Head>
-        <title>Create Next App</title>
-        <link rel="icon" href="/favicon.ico" />
-      </Head>
-
-      <main className={styles.main}>
-        <h1 className={styles.title}>
-          Welcome to <a href="https://nextjs.org">Next.js!</a>
-        </h1>
-
-        <p className={styles.description}>
-          Get started by editing{' '}
-          <code className={styles.code}>pages/index.js</code>
-        </p>
-
-        <div className={styles.grid}>
-          <a href="https://nextjs.org/docs" className={styles.card}>
-            <h3>Documentation &rarr;</h3>
-            <p>Find in-depth information about Next.js features and API.</p>
-          </a>
-
-          <a href="https://nextjs.org/learn" className={styles.card}>
-            <h3>Learn &rarr;</h3>
-            <p>Learn about Next.js in an interactive course with quizzes!</p>
-          </a>
-
-          <a
-            href="https://github.com/vercel/next.js/tree/master/examples"
-            className={styles.card}
-          >
-            <h3>Examples &rarr;</h3>
-            <p>Discover and deploy boilerplate example Next.js projects.</p>
-          </a>
-
-          <a
-            href="https://vercel.com/import?filter=next.js&utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
-            className={styles.card}
-          >
-            <h3>Deploy &rarr;</h3>
-            <p>
-              Instantly deploy your Next.js site to a public URL with Vercel.
-            </p>
-          </a>
-        </div>
-      </main>
-
-      <footer className={styles.footer}>
-        <a
-          href="https://vercel.com?utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Powered by{' '}
-          <img src="/vercel.svg" alt="Vercel Logo" className={styles.logo} />
-        </a>
-      </footer>
-    </div>
-  )
+    <>
+      <div className={classes.mainContainer}>
+        <Container maxWidth="sm">
+          <div className={classes.mainSection}>
+            <img src="https://attach.s.op.gg/logo/20201031232001.393bd1782110eea7bdd13d7f5d26acd4.png" style={{ maxHeight: "200px" }} />
+            <form onSubmit={handleSubmit} style={{ width: "100%" }}>
+              <TextField className={classes.searchBox} label="Type in your summoner..." variant="filled" fullWidth size="small" value={userName} onChange={handleChange} onFocus={() => setIsFocus(true)} />
+            </form>
+            <div style={isFocus ? { display: "flex", justifyContent: "left", marginTop: "25px", flexWrap: "wrap" } : { display: "none" }}>
+              {userList.map((el) => (
+                <Link href={`/summoner?userName=${el}`}>
+                  <Typography variant="body1" style={{ cursor: "pointer", flexBasis: "33%" }}>
+                    {el}
+                  </Typography>
+                </Link>
+              ))}
+            </div>
+          </div>
+        </Container>
+      </div>
+    </>
+  );
 }
